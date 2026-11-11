@@ -25,7 +25,23 @@ jobs:
       - name: Allow SMS and WhatsApp links
         run: |
           sed -i 's#<application#<queries><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="sms"/></intent></queries>\n    <application#' android/app/src/main/AndroidManifest.xml
+      - name: Make app icon
+        run: |
+          pip install pillow
+          mkdir -p assets
+          python3 - <<'PYEOF'
+          from PIL import Image, ImageDraw
+          S = 1024
+          im = Image.new('RGB', (S, S), (0, 121, 107))
+          d = ImageDraw.Draw(im)
+          d.ellipse((112, 112, 912, 912), fill=(255, 255, 255))
+          d.polygon([(560, 170), (330, 560), (490, 560), (440, 860), (700, 440), (540, 440)], fill=(255, 179, 0))
+          d.polygon([(760, 520), (690, 640), (830, 640)], fill=(2, 136, 209))
+          d.ellipse((690, 590, 830, 730), fill=(2, 136, 209))
+          im.save('assets/icon.png')
+          PYEOF
       - run: flutter pub get
+      - run: dart run flutter_launcher_icons
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
